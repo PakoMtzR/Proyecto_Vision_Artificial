@@ -185,7 +185,7 @@ class App(ctk.CTk):
             label.destroy()
         self.image_counter = 0
 
-    def resize_image(self, image, max_dim = 750):
+    def resize_image(self, image, max_dim = 630):   # 750
         height, width, _ = image.shape
         scale = max_dim / max(height, width)
         return cv2.resize(image, (0, 0), fx=scale, fy=scale)
