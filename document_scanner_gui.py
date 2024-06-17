@@ -81,6 +81,7 @@ class App(ctk.CTk):
 
         # ---------------------------------------------------------------------
 
+    # Funcion para cargar la imagen a la interfaz
     def upload_image(self):
         filepath = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")])
         if filepath:
@@ -89,6 +90,7 @@ class App(ctk.CTk):
             image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
             self.update_image(image_rgb)
 
+    # Funcion para cambiar el umbral y procesar la imagen blanco y negro en tiempo real
     def slider_callback(self, value):
         if self.processed_image is None:
             return
@@ -99,6 +101,8 @@ class App(ctk.CTk):
         self.processed_image = image_bw
         self.update_image(image_bw)
 
+    # Funcion para escanear el documento dentro de la imagen
+    # Reconocimiento de bordes, transformacion y umbralicilizacion
     def scan_image(self):
         if self.image is None:
             self.mostrar_advertencia("ERROR: ALVTO2", "Tonto, primero carga una imagen")
@@ -140,6 +144,7 @@ class App(ctk.CTk):
 
         self.mostrar_advertencia("Error", "No se pudo encontrar un documento en la imagen")
     
+    # Funcion que permite rotar la imagen procesada
     def rotate_image(self):
         if self.processed_image is None:
             return
@@ -148,6 +153,7 @@ class App(ctk.CTk):
         self.update_image(self.processed_image)
         return
 
+    # Funcion para poder guardar la imagen procesada en un directorio
     def save_image(self):
         if self.processed_image is None:
             return
@@ -159,6 +165,7 @@ class App(ctk.CTk):
             pil_image.save(filepath)
             self.mostrar_advertencia("Guardado", "La imagen ha sido guardada exitosamente")
     
+    # Funcion que agrega la imagen a la lista para poder crear el pdf
     def add_images2pdf_list(self):
         if self.processed_image is None:
             return
@@ -167,35 +174,41 @@ class App(ctk.CTk):
         label = ctk.CTkLabel(master=self.list_img, text=f"Imagen_{self.image_counter}")
         label.pack(pady=5, padx=2)
         self.image_counter += 1
-        print("Imagen agregada")
+        print(f"Imagen_{self.image_counter} agregada")
 
+    # Funcion que toma todas las imagenes agregadas de la lista para generar un pdf
     def save_pdf(self):
         if self.images2pdf == []:
             self.mostrar_advertencia("Error", "No hay imagen procesada para guardar como PDF")
             return
 
+        # Guardamos la lista de imagenes en un pdf
         filepath = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
         if filepath:
             pil_images = [Image.fromarray(img).convert("RGB") for img in self.images2pdf]
             pil_images[0].save(filepath, save_all=True, append_images=pil_images[1:], resolution=100.0)
             self.mostrar_advertencia("Guardado", "El PDF ha sido guardado exitosamente")
         
+        # Limpiamos la lista de imagenes, los elementos dentro del CTkScrollableFrame y reiniciamos el contador
         self.images2pdf = []
         for label in self.list_img.winfo_children():
             label.destroy()
         self.image_counter = 0
 
+    # Funcion para escalar la imagen para que se pueda visualizar en la interfaz
     def resize_image(self, image, max_dim = 630):   # 750
         height, width, _ = image.shape
         scale = max_dim / max(height, width)
         return cv2.resize(image, (0, 0), fx=scale, fy=scale)
 
+    # Funcion para poder actulizar la imagen en la interfaz
     def update_image(self, image_array):
         pil_image = Image.fromarray(image_array)
         ctk_image = ImageTk.PhotoImage(pil_image)
         self.image_label.configure(image=ctk_image, text="")
         self.image_label.image = ctk_image  # Guardar referencia a la imagen
 
+    # Funcion para ordenar los puntos para poder realizar la transformacion del documento una vez que reconocimos los bordes
     def ordenar_puntos(self, puntos):
         n_puntos = np.concatenate([puntos[0], puntos[1], puntos[2], puntos[3]]).tolist()
         y_order = sorted(n_puntos, key=lambda n_puntos: n_puntos[1])
@@ -205,12 +218,15 @@ class App(ctk.CTk):
         x2_order = sorted(x2_order, key=lambda x2_order: x2_order[0])
         return [x1_order[0], x1_order[1], x2_order[0], x2_order[1]]
 
+    # Funcion para poder enviar avisos o advertencias dentro de la interfaz
     def mostrar_advertencia(self, title, message):
+        # Configuracion de ventana
         advertencia_ventana = ctk.CTkToplevel(self)
         advertencia_ventana.title(title)
         advertencia_ventana.geometry("350x150")
-        advertencia_ventana.grab_set()
+        advertencia_ventana.grab_set()  # Hace que solo se pueda interactuar con esta ventana hasta que se cierre
 
+        # Elementos dentro de la ventana
         frame = ctk.CTkFrame(master=advertencia_ventana)
         frame.pack(pady=20, padx=20, fill="both", expand=True)
         label = ctk.CTkLabel(master=frame, text=message)
