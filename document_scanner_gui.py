@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import customtkinter as ctk
 import cv2
 import numpy as np
+from time import sleep
 
 # Modificando la apariencia
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -86,7 +87,7 @@ class App(ctk.CTk):
         filepath = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")])
         if filepath:
             self.image = cv2.imread(filepath)
-            self.image = self.resize_image(self.image)
+            #self.image = self.resize_image(self.image)
             image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
             self.update_image(image_rgb)
 
@@ -113,12 +114,19 @@ class App(ctk.CTk):
         _, img_bw = cv2.threshold(gray_blur, 125, 255, cv2.THRESH_BINARY)
         canny = cv2.Canny(img_bw, 10, 150)
 
-        cv2.imshow("gray", gray)
-        cv2.imshow("gray_blur", gray_blur)
-        cv2.imshow("img_bw", img_bw)
-        cv2.imshow("canny", canny)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow("gray", gray)
+        # cv2.imshow("gray_blur", gray_blur)
+        # cv2.imshow("img_bw", img_bw)
+        # cv2.imshow("canny", canny)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        self.update_image(gray)
+        sleep(1)
+        self.update_image(gray_blur)
+        sleep(1)
+        self.update_image(img_bw)
+        sleep(1)
+        self.update_image(canny)
 
         contours = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
         contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
@@ -128,7 +136,7 @@ class App(ctk.CTk):
         for contour in contours:
             peri = cv2.arcLength(contour, True)
             approx = cv2.approxPolyDP(contour, 0.02 * peri, True)
-            print(len(approx))  # para verificar cuanto puntos encontro
+            print(f"{len(approx)} puntos encontrados")  # para verificar cuanto puntos encontro
 
             if len(approx) == 4:
                 puntos = self.ordenar_puntos(approx)
@@ -196,14 +204,15 @@ class App(ctk.CTk):
         self.image_counter = 0
 
     # Funcion para escalar la imagen para que se pueda visualizar en la interfaz
-    def resize_image(self, image, max_dim = 630):   # 750
-        height, width, _ = image.shape
+    def resize_image(self, image, max_dim = 750):   # 750 630
+        height, width = image.shape[:2]
         scale = max_dim / max(height, width)
         return cv2.resize(image, (0, 0), fx=scale, fy=scale)
 
     # Funcion para poder actulizar la imagen en la interfaz
     def update_image(self, image_array):
-        pil_image = Image.fromarray(image_array)
+        resized_image_array = self.resize_image(image_array)
+        pil_image = Image.fromarray(resized_image_array)
         ctk_image = ImageTk.PhotoImage(pil_image)
         self.image_label.configure(image=ctk_image, text="")
         self.image_label.image = ctk_image  # Guardar referencia a la imagen
