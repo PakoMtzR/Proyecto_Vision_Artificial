@@ -14,9 +14,20 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
+effects_functions = [
+    imgs_effects.sketch,
+    imgs_effects.vhs,
+    imgs_effects.sepia,
+    imgs_effects.emboss,
+    imgs_effects.thermal,
+    imgs_effects.miopia,
+    imgs_effects.anaglyph,
+    imgs_effects.mirror,
+    imgs_effects.vignette
+]
 
 class App(ctk.CTk):
-    APP_NAME = "Document Scanner"
+    APP_NAME = "Document Scanner & more"
     WIDTH = 850
     HEIGHT = 700
 
@@ -98,10 +109,12 @@ class App(ctk.CTk):
         self.btn_copy.pack(pady=10, padx=10)
 
         # Elementos dentro de Tab 3
-        btns = ["Dibujo Lapiz", "VHS", "Sepia"]
+        btns = ["Dibujo Lapiz", "VHS", "Sepia", "Emboss", "Thermal", "Miopia", "Anaglyph", "Mirror", "Vignette"]
         for i, text_btn in enumerate(btns):
-            self.btn = ctk.CTkButton(master=self.tabview.tab("tab 3"), text=text_btn, command=self.apply_effect(i))
+            self.btn = ctk.CTkButton(master=self.tabview.tab("tab 3"), text=text_btn, command=lambda effect=i: self.apply_effect(effect))
             self.btn.pack(pady=10, padx=10)
+        self.btn_save_img2 = ctk.CTkButton(master=self.tabview.tab("tab 3"), text="Guardar Imagen", fg_color="green")
+        self.btn_save_img2.pack(pady=10, padx=10)
         # ---------------------------------------------------------------------
 
     # Funcion para cargar la imagen a la interfaz
@@ -242,21 +255,17 @@ class App(ctk.CTk):
         self.clipboard_clear()    
         self.clipboard_append(self.textbox.get("0.0", ctk.END).strip())                     
 
-    def apply_effect(self, effect):
-        if self.image == None:
+    def apply_effect(self, effect_index):
+        if self.image is None:
             return
-        
-        match(effect):
-            case 0:
-                self.image_with_effect = imgs_effects.sketch(self.image)
-            case 1:
-                self.image_with_effect = imgs_effects.vhs(self.image)
-            case 2:
-                self.image_with_effect = imgs_effects.sepia(self.image)
-            case _:
-                print("No existe ese efecto")
 
-        self.update_image(self.image_with_effect)
+        try:
+            # Llamar a la función de efecto correspondiente usando el índice
+            effect_function = effects_functions[effect_index]
+            self.image_with_effect = effect_function(self.image)
+            self.update_image(cv2.cvtColor(self.image_with_effect, cv2.COLOR_BGR2RGB))
+        except Exception as e:
+            self.mostrar_advertencia("Error", f"Failed to apply effect: {e}")
 
     # Funcion para poder enviar avisos o advertencias dentro de la interfaz
     def mostrar_advertencia(self, title, message):
