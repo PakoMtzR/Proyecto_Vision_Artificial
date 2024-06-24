@@ -4,7 +4,11 @@ from PIL import Image, ImageTk
 import customtkinter as ctk
 import cv2
 import numpy as np
-from time import sleep
+import pytesseract
+import imgs_effects
+
+# Ruta al ejecutable de Tesseract (cambia esto según tu instalación)
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Modificando la apariencia
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -22,8 +26,12 @@ class App(ctk.CTk):
         # Creamos las imagenes con valor nulo
         self.image = None
         self.processed_image = None
+        self.image_with_effect = None
         self.images2pdf = []
         self.image_counter = 0
+
+        # Solo esta este boton para cerrar la ventana en lo que la interfaz esta en desarrollo
+        self.bind("<Return>", lambda event: self.destroy())
 
         # Configuracion de la pantalla
         # ---------------------------------------------------------------------
@@ -58,6 +66,7 @@ class App(ctk.CTk):
         self.tabview.pack(pady=10, padx=10, expand=True, fill="both") # 
         self.tabview.add("tab 1")
         self.tabview.add("tab 2")
+        self.tabview.add("tab 3")
         self.tabview.set("tab 1")
         
         # Elementos dentro de Tab1
@@ -79,7 +88,20 @@ class App(ctk.CTk):
         self.btn_create_pdf.pack(pady=10, padx=10)
 
         # Elementos dentro de Tab 2
+        self.btn_ocr = ctk.CTkButton(master=self.tabview.tab("tab 2"), text="Reconocer Caracteres", command=self.ocr)
+        self.btn_ocr.pack(pady=10, padx=10)
+        self.textbox = ctk.CTkTextbox(master=self.tabview.tab("tab 2"))
+        self.textbox.pack(pady=10, padx=10, fill="both", expand=True)
+        self.btn_clean = ctk.CTkButton(master=self.tabview.tab("tab 2"), text="Limpiar", command=self.clean_textbox)
+        self.btn_clean.pack(pady=10, padx=10)
+        self.btn_copy = ctk.CTkButton(master=self.tabview.tab("tab 2"), text="Copiar", command=self.copy_textbox)
+        self.btn_copy.pack(pady=10, padx=10)
 
+        # Elementos dentro de Tab 3
+        btns = ["Dibujo Lapiz", "VHS", "Sepia"]
+        for i, text_btn in enumerate(btns):
+            self.btn = ctk.CTkButton(master=self.tabview.tab("tab 3"), text=text_btn, command=self.apply_effect(i))
+            self.btn.pack(pady=10, padx=10)
         # ---------------------------------------------------------------------
 
     # Funcion para cargar la imagen a la interfaz
@@ -87,9 +109,43 @@ class App(ctk.CTk):
         filepath = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")])
         if filepath:
             self.image = cv2.imread(filepath)
-            #self.image = self.resize_image(self.image)
             image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
             self.update_image(image_rgb)
+
+    # Funcion que permite rotar la imagen procesada
+    def rotate_image(self):
+        if self.processed_image is None:
+            return
+        
+        self.processed_image = cv2.rotate(self.processed_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        self.update_image(self.processed_image)
+        return
+
+    # Funcion para poder guardar la imagen procesada en un directorio
+    def save_image(self):
+        if self.processed_image is None:
+            return
+        
+        # cv2.imwrite("img1.jpg", self.image)
+        filepath = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg"), ("All files", "*.*")])
+        if filepath:
+            pil_image = Image.fromarray(self.processed_image)
+            pil_image.save(filepath)
+            self.mostrar_advertencia("Guardado", "La imagen ha sido guardada exitosamente")
+
+    # Funcion para escalar la imagen para que se pueda visualizar en la interfaz
+    def resize_image(self, image, max_dim = 750):   # 750 630
+        height, width = image.shape[:2]
+        scale = max_dim / max(height, width)
+        return cv2.resize(image, (0, 0), fx=scale, fy=scale)
+
+    # Funcion para poder actulizar la imagen en la interfaz
+    def update_image(self, image_array):
+        resized_image_array = self.resize_image(image_array)
+        pil_image = Image.fromarray(resized_image_array)
+        ctk_image = ImageTk.PhotoImage(pil_image)
+        self.image_label.configure(image=ctk_image, text="")
+        self.image_label.image = ctk_image  # Guardar referencia a la imagen
 
     # Funcion para cambiar el umbral y procesar la imagen blanco y negro en tiempo real
     def slider_callback(self, value):
@@ -106,27 +162,17 @@ class App(ctk.CTk):
     # Reconocimiento de bordes, transformacion y umbralicilizacion
     def scan_image(self):
         if self.image is None:
-            self.mostrar_advertencia("ERROR: ALVTO2", "Tonto, primero carga una imagen")
+            self.mostrar_advertencia("ERROR", "Primero carga una imagen")
             return
         
         gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        gray_blur = cv2.GaussianBlur(gray, (5, 5), 0)
-        _, img_bw = cv2.threshold(gray_blur, 125, 255, cv2.THRESH_BINARY)
-        canny = cv2.Canny(img_bw, 10, 150)
+        canny = cv2.Canny(gray, 10, 150)
+        canny = cv2.dilate(canny, None, iterations=1)
 
-        # cv2.imshow("gray", gray)
-        # cv2.imshow("gray_blur", gray_blur)
-        # cv2.imshow("img_bw", img_bw)
-        # cv2.imshow("canny", canny)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-        self.update_image(gray)
-        sleep(1)
-        self.update_image(gray_blur)
-        sleep(1)
-        self.update_image(img_bw)
-        sleep(1)
-        self.update_image(canny)
+        # gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        # gray_blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        # _, img_bw = cv2.threshold(gray_blur, 125, 255, cv2.THRESH_BINARY)
+        # canny = cv2.Canny(img_bw, 10, 150)
 
         contours = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
         contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
@@ -152,27 +198,6 @@ class App(ctk.CTk):
 
         self.mostrar_advertencia("Error", "No se pudo encontrar un documento en la imagen")
     
-    # Funcion que permite rotar la imagen procesada
-    def rotate_image(self):
-        if self.processed_image is None:
-            return
-        
-        self.processed_image = cv2.rotate(self.processed_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        self.update_image(self.processed_image)
-        return
-
-    # Funcion para poder guardar la imagen procesada en un directorio
-    def save_image(self):
-        if self.processed_image is None:
-            return
-        
-        # cv2.imwrite("img1.jpg", self.image)
-        filepath = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg"), ("All files", "*.*")])
-        if filepath:
-            pil_image = Image.fromarray(self.processed_image)
-            pil_image.save(filepath)
-            self.mostrar_advertencia("Guardado", "La imagen ha sido guardada exitosamente")
-    
     # Funcion que agrega la imagen a la lista para poder crear el pdf
     def add_images2pdf_list(self):
         if self.processed_image is None:
@@ -182,11 +207,11 @@ class App(ctk.CTk):
         label = ctk.CTkLabel(master=self.list_img, text=f"Imagen_{self.image_counter}")
         label.pack(pady=5, padx=2)
         self.image_counter += 1
-        print(f"Imagen_{self.image_counter} agregada")
 
     # Funcion que toma todas las imagenes agregadas de la lista para generar un pdf
     def save_pdf(self):
-        if self.images2pdf == []:
+        # if self.images2pdf == []:
+        if not self.images2pdf:
             self.mostrar_advertencia("Error", "No hay imagen procesada para guardar como PDF")
             return
 
@@ -198,34 +223,40 @@ class App(ctk.CTk):
             self.mostrar_advertencia("Guardado", "El PDF ha sido guardado exitosamente")
         
         # Limpiamos la lista de imagenes, los elementos dentro del CTkScrollableFrame y reiniciamos el contador
-        self.images2pdf = []
+        # self.images2pdf = []
+        self.images2pdf.clear()
+        self.image_counter = 0
         for label in self.list_img.winfo_children():
             label.destroy()
-        self.image_counter = 0
+    
+    def ocr(self):
+        self.scan_image()
+        text = pytesseract.image_to_string(self.processed_image)
+        self.textbox.delete("0.0", tk.END)
+        self.textbox.insert("0.0", text)
+            
+    def clean_textbox(self):
+        self.textbox.delete("0.0", ctk.END)
+    
+    def copy_textbox(self):
+        self.clipboard_clear()    
+        self.clipboard_append(self.textbox.get("0.0", ctk.END).strip())                     
 
-    # Funcion para escalar la imagen para que se pueda visualizar en la interfaz
-    def resize_image(self, image, max_dim = 750):   # 750 630
-        height, width = image.shape[:2]
-        scale = max_dim / max(height, width)
-        return cv2.resize(image, (0, 0), fx=scale, fy=scale)
+    def apply_effect(self, effect):
+        if self.image == None:
+            return
+        
+        match(effect):
+            case 0:
+                self.image_with_effect = imgs_effects.sketch(self.image)
+            case 1:
+                self.image_with_effect = imgs_effects.vhs(self.image)
+            case 2:
+                self.image_with_effect = imgs_effects.sepia(self.image)
+            case _:
+                print("No existe ese efecto")
 
-    # Funcion para poder actulizar la imagen en la interfaz
-    def update_image(self, image_array):
-        resized_image_array = self.resize_image(image_array)
-        pil_image = Image.fromarray(resized_image_array)
-        ctk_image = ImageTk.PhotoImage(pil_image)
-        self.image_label.configure(image=ctk_image, text="")
-        self.image_label.image = ctk_image  # Guardar referencia a la imagen
-
-    # Funcion para ordenar los puntos para poder realizar la transformacion del documento una vez que reconocimos los bordes
-    def ordenar_puntos(self, puntos):
-        n_puntos = np.concatenate([puntos[0], puntos[1], puntos[2], puntos[3]]).tolist()
-        y_order = sorted(n_puntos, key=lambda n_puntos: n_puntos[1])
-        x1_order = y_order[:2]
-        x1_order = sorted(x1_order, key=lambda x1_order: x1_order[0])
-        x2_order = y_order[2:4]
-        x2_order = sorted(x2_order, key=lambda x2_order: x2_order[0])
-        return [x1_order[0], x1_order[1], x2_order[0], x2_order[1]]
+        self.update_image(self.image_with_effect)
 
     # Funcion para poder enviar avisos o advertencias dentro de la interfaz
     def mostrar_advertencia(self, title, message):
@@ -245,6 +276,16 @@ class App(ctk.CTk):
 
         # Vincular la tecla Enter a la función de cierre de la ventana de advertencia
         advertencia_ventana.bind("<Return>", lambda event: advertencia_ventana.destroy())
+    
+    # Funcion para ordenar los puntos para poder realizar la transformacion del documento una vez que reconocimos los bordes
+    def ordenar_puntos(self, puntos):
+        n_puntos = np.concatenate([puntos[0], puntos[1], puntos[2], puntos[3]]).tolist()
+        y_order = sorted(n_puntos, key=lambda n_puntos: n_puntos[1])
+        x1_order = y_order[:2]
+        x1_order = sorted(x1_order, key=lambda x1_order: x1_order[0])
+        x2_order = y_order[2:4]
+        x2_order = sorted(x2_order, key=lambda x2_order: x2_order[0])
+        return [x1_order[0], x1_order[1], x2_order[0], x2_order[1]]
 
 if __name__ == "__main__":
     app = App()
