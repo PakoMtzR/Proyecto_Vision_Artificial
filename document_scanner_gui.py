@@ -17,6 +17,9 @@ ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark
 effects_functions = [
     imgs_effects.sketch,
     imgs_effects.vhs,
+    imgs_effects.watercolor,
+    imgs_effects.cartoonize,
+    imgs_effects.oil,
     imgs_effects.sepia,
     imgs_effects.emboss,
     imgs_effects.thermal,
@@ -29,7 +32,7 @@ effects_functions = [
 class App(ctk.CTk):
     APP_NAME = "Document Scanner & more"
     WIDTH = 850
-    HEIGHT = 700
+    HEIGHT = 720
 
     # Funcion __init__ crea la ventana y los elementos de la interfaz
     def __init__(self):
@@ -87,7 +90,7 @@ class App(ctk.CTk):
         self.threshold_slider.pack(pady=10, padx=10) #, fill=tk.BOTH
         self.btn_rotate_img = ctk.CTkButton(master=self.tabview.tab("tab 1"), text="Rotar Imagen", command=self.rotate_image)
         self.btn_rotate_img.pack(pady=10, padx=10)
-        self.btn_save_img = ctk.CTkButton(master=self.tabview.tab("tab 1"), text="Guardar Imagen", command=self.save_image)
+        self.btn_save_img = ctk.CTkButton(master=self.tabview.tab("tab 1"), text="Guardar Imagen", command=self.save_scanned_image)
         self.btn_save_img.pack(pady=10, padx=10)
         self.label_list = ctk.CTkLabel(master=self.tabview.tab("tab 1"), text="Lista de Imagenes")
         self.label_list.pack(pady=2, padx=10)
@@ -109,11 +112,11 @@ class App(ctk.CTk):
         self.btn_copy.pack(pady=10, padx=10)
 
         # Elementos dentro de Tab 3
-        btns = ["Dibujo Lapiz", "VHS", "Sepia", "Emboss", "Thermal", "Miopia", "Anaglyph", "Mirror", "Vignette"]
+        btns = ["Dibujo Lapiz", "VHS", "Acuarela", "Caricatura", "Oleo", "Sepia", "Emboss", "Thermal", "Miopia", "Anaglyph", "Mirror", "Vignette"]
         for i, text_btn in enumerate(btns):
             self.btn = ctk.CTkButton(master=self.tabview.tab("tab 3"), text=text_btn, command=lambda effect=i: self.apply_effect(effect))
             self.btn.pack(pady=10, padx=10)
-        self.btn_save_img2 = ctk.CTkButton(master=self.tabview.tab("tab 3"), text="Guardar Imagen", fg_color="green")
+        self.btn_save_img2 = ctk.CTkButton(master=self.tabview.tab("tab 3"), text="Guardar Imagen", fg_color="green", command=self.save_image_with_effect)
         self.btn_save_img2.pack(pady=10, padx=10)
         # ---------------------------------------------------------------------
 
@@ -134,15 +137,24 @@ class App(ctk.CTk):
         self.update_image(self.processed_image)
         return
 
-    # Funcion para poder guardar la imagen procesada en un directorio
-    def save_image(self):
+    # Funcion para poder guardar la imagen escaneada
+    def save_scanned_image(self):
         if self.processed_image is None:
             return
         
-        # cv2.imwrite("img1.jpg", self.image)
+        self.save_image(image=self.processed_image)
+
+    # Funcion para poder guardar la imagen procesada (con filtros)
+    def save_image_with_effect(self):
+        if self.image_with_effect is None:
+            return
+        self.save_image(cv2.cvtColor(self.image_with_effect, cv2.COLOR_BGR2RGB))
+
+    # Funcion para guardar una imagen en un directorio
+    def save_image(self, image):
         filepath = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg"), ("All files", "*.*")])
         if filepath:
-            pil_image = Image.fromarray(self.processed_image)
+            pil_image = Image.fromarray(image)
             pil_image.save(filepath)
             self.mostrar_advertencia("Guardado", "La imagen ha sido guardada exitosamente")
 
@@ -231,6 +243,7 @@ class App(ctk.CTk):
         # Guardamos la lista de imagenes en un pdf
         filepath = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
         if filepath:
+            print(filepath)
             pil_images = [Image.fromarray(img).convert("RGB") for img in self.images2pdf]
             pil_images[0].save(filepath, save_all=True, append_images=pil_images[1:], resolution=100.0)
             self.mostrar_advertencia("Guardado", "El PDF ha sido guardado exitosamente")
@@ -258,7 +271,6 @@ class App(ctk.CTk):
     def apply_effect(self, effect_index):
         if self.image is None:
             return
-
         try:
             # Llamar a la función de efecto correspondiente usando el índice
             effect_function = effects_functions[effect_index]

@@ -30,10 +30,11 @@ def vhs(image):
   for i in range(0, height, height//n_lines):
     scan_lines[i,:,:] = lines_value
 
+  vhs_image = np.zeros_like(image)
   # Agregamos texto a la imagen
-  image = cv2.putText(image, "PLAY >>", (30,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
-  image = cv2.putText(image, "AM 08:45", (30,height-100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
-  image = cv2.putText(image, "MAY 25 2024", (30,height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+  cv2.putText(vhs_image, "PLAY >>", (30,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+  cv2.putText(vhs_image, "AM 08:45", (30,height-100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+  cv2.putText(vhs_image, "MAY 25 2024", (30,height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
 
   # Añadir un poco de ruido para dar un efecto más antiguo
   noise = np.random.normal(0, 15, image.shape)
@@ -42,6 +43,25 @@ def vhs(image):
   vhs_image = image + noise + scan_lines
 
   return vhs_image
+
+def watercolor(image):
+  return cv2.stylization(image, sigma_s=60, sigma_r=0.6)
+
+def cartoonize (image):
+  gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+  blurImage = cv2.medianBlur(image, 1)
+
+  edges = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
+
+  color = cv2.bilateralFilter(image, 9, 200, 200)
+
+  cartoon = cv2.bitwise_and(color, color, mask = edges)
+
+  return cartoon
+
+
+def oil(image):
+  return cv2.xphoto.oilPainting(image, 4, 1)
 
 def sepia(img):
   # Crear un kernel para el efecto sepia
