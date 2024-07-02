@@ -12,11 +12,11 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 # Modificando la apariencia
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
-ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+ctk.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 effects_functions = [
     imgs_effects.sketch,
-    imgs_effects.vhs,
+    # imgs_effects.vhs,
     imgs_effects.watercolor,
     imgs_effects.cartoonize,
     imgs_effects.oil,
@@ -45,7 +45,7 @@ class App(ctk.CTk):
         self.image_counter = 0
 
         # Solo esta este boton para cerrar la ventana en lo que la interfaz esta en desarrollo
-        self.bind("<Return>", lambda event: self.destroy())
+        # self.bind("<Return>", lambda event: self.destroy())
 
         # Configuracion de la pantalla
         # ---------------------------------------------------------------------
@@ -112,7 +112,7 @@ class App(ctk.CTk):
         self.btn_copy.pack(pady=10, padx=10)
 
         # Elementos dentro de Tab 3
-        btns = ["Dibujo Lapiz", "VHS", "Acuarela", "Caricatura", "Oleo", "Sepia", "Emboss", "Thermal", "Miopia", "Anaglyph", "Mirror", "Vignette"]
+        btns = ["Dibujo Lapiz", "Acuarela", "Caricatura", "Oleo", "Sepia", "Emboss", "Thermal", "Miopia", "Anaglyph", "Mirror", "Vignette"]
         for i, text_btn in enumerate(btns):
             self.btn = ctk.CTkButton(master=self.tabview.tab("tab 3"), text=text_btn, command=lambda effect=i: self.apply_effect(effect))
             self.btn.pack(pady=10, padx=10)
