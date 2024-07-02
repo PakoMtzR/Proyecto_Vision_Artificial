@@ -30,7 +30,7 @@ effects_functions = [
 ]
 
 class App(ctk.CTk):
-    APP_NAME = "Document Scanner & more"
+    APP_NAME = "Document Scanner & More"
     WIDTH = 850
     HEIGHT = 720
 
