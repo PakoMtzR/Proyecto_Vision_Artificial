@@ -30,7 +30,7 @@ effects_functions = [
 ]
 
 class App(ctk.CTk):
-    APP_NAME = "Document Scanner & More"
+    APP_NAME = "Proyecto Vision Artificial"
     WIDTH = 850
     HEIGHT = 720
 
@@ -78,46 +78,59 @@ class App(ctk.CTk):
         # ---------------------------------------------------------------------
         self.tabview = ctk.CTkTabview(master=self.options_frame)
         self.tabview.pack(pady=10, padx=10, expand=True, fill="both") # 
-        self.tabview.add("tab 1")
-        self.tabview.add("tab 2")
-        self.tabview.add("tab 3")
-        self.tabview.set("tab 1")
+        self.tabview.add("Escaner")
+        self.tabview.add("OCR")
+        self.tabview.add("Efectos")
+        self.tabview.add("Esteganografia")
+        self.tabview.set("Escaner")
         
         # Elementos dentro de Tab1
-        self.btn_scan_img = ctk.CTkButton(master=self.tabview.tab("tab 1"), text="Escanear", command=self.scan_image)
+        self.btn_scan_img = ctk.CTkButton(master=self.tabview.tab("Escaner"), text="Escanear", command=self.scan_image)
         self.btn_scan_img.pack(pady=10, padx=10)
-        self.threshold_slider = ctk.CTkSlider(master=self.tabview.tab("tab 1"), from_=0, to=255, command=self.slider_callback)
+        self.threshold_slider = ctk.CTkSlider(master=self.tabview.tab("Escaner"), from_=0, to=255, command=self.slider_callback)
         self.threshold_slider.pack(pady=10, padx=10) #, fill=tk.BOTH
-        self.btn_rotate_img = ctk.CTkButton(master=self.tabview.tab("tab 1"), text="Rotar Imagen", command=self.rotate_image)
+        self.btn_rotate_img = ctk.CTkButton(master=self.tabview.tab("Escaner"), text="Rotar Imagen", command=self.rotate_image)
         self.btn_rotate_img.pack(pady=10, padx=10)
-        self.btn_save_img = ctk.CTkButton(master=self.tabview.tab("tab 1"), text="Guardar Imagen", command=self.save_scanned_image)
+        self.btn_save_img = ctk.CTkButton(master=self.tabview.tab("Escaner"), text="Guardar Imagen", command=self.save_scanned_image)
         self.btn_save_img.pack(pady=10, padx=10)
-        self.label_list = ctk.CTkLabel(master=self.tabview.tab("tab 1"), text="Lista de Imagenes")
+        self.label_list = ctk.CTkLabel(master=self.tabview.tab("Escaner"), text="Lista de Imagenes")
         self.label_list.pack(pady=2, padx=10)
-        self.list_img = ctk.CTkScrollableFrame(master=self.tabview.tab("tab 1"))
+        self.list_img = ctk.CTkScrollableFrame(master=self.tabview.tab("Escaner"))
         self.list_img.pack(pady=10, padx=25, fill="both", expand=True)
-        self.btn_add2list = ctk.CTkButton(master=self.tabview.tab("tab 1"), text="Agregar", command=self.add_images2pdf_list)
+        self.btn_add2list = ctk.CTkButton(master=self.tabview.tab("Escaner"), text="Agregar", command=self.add_images2pdf_list)
         self.btn_add2list.pack(pady=10, padx=10)
-        self.btn_create_pdf = ctk.CTkButton(master=self.tabview.tab("tab 1"), text="Crear PDF", command=self.save_pdf)
+        self.btn_create_pdf = ctk.CTkButton(master=self.tabview.tab("Escaner"), text="Crear PDF", command=self.save_pdf)
         self.btn_create_pdf.pack(pady=10, padx=10)
 
-        # Elementos dentro de Tab 2
-        self.btn_ocr = ctk.CTkButton(master=self.tabview.tab("tab 2"), text="Reconocer Caracteres", command=self.ocr)
+        # Elementos dentro de OCR
+        self.btn_ocr = ctk.CTkButton(master=self.tabview.tab("OCR"), text="Reconocer Caracteres", command=self.ocr)
         self.btn_ocr.pack(pady=10, padx=10)
-        self.textbox = ctk.CTkTextbox(master=self.tabview.tab("tab 2"))
-        self.textbox.pack(pady=10, padx=10, fill="both", expand=True)
-        self.btn_clean = ctk.CTkButton(master=self.tabview.tab("tab 2"), text="Limpiar", command=self.clean_textbox)
-        self.btn_clean.pack(pady=10, padx=10)
-        self.btn_copy = ctk.CTkButton(master=self.tabview.tab("tab 2"), text="Copiar", command=self.copy_textbox)
-        self.btn_copy.pack(pady=10, padx=10)
+        self.textbox_ocr = ctk.CTkTextbox(master=self.tabview.tab("OCR"))
+        self.textbox_ocr.pack(pady=10, padx=10, fill="both", expand=True)
+        self.btn_clean_textbox_ocr = ctk.CTkButton(master=self.tabview.tab("OCR"), text="Limpiar", command=self.clean_textbox_ocr)
+        self.btn_clean_textbox_ocr.pack(pady=10, padx=10)
+        self.btn_copy_textbox_ocr = ctk.CTkButton(master=self.tabview.tab("OCR"), text="Copiar", command=self.copy_textbox_ocr)
+        self.btn_copy_textbox_ocr.pack(pady=10, padx=10)
 
-        # Elementos dentro de Tab 3
+        # Elementos dentro de Efectos
         btns = ["Dibujo Lapiz", "Acuarela", "Caricatura", "Oleo", "Sepia", "Emboss", "Thermal", "Miopia", "Anaglyph", "Mirror", "Vignette"]
         for i, text_btn in enumerate(btns):
-            self.btn = ctk.CTkButton(master=self.tabview.tab("tab 3"), text=text_btn, command=lambda effect=i: self.apply_effect(effect))
+            self.btn = ctk.CTkButton(master=self.tabview.tab("Efectos"), text=text_btn, command=lambda effect=i: self.apply_effect(effect))
             self.btn.pack(pady=10, padx=10)
-        self.btn_save_img2 = ctk.CTkButton(master=self.tabview.tab("tab 3"), text="Guardar Imagen", fg_color="green", command=self.save_image_with_effect)
+        self.btn_save_img2 = ctk.CTkButton(master=self.tabview.tab("Efectos"), text="Guardar Imagen", fg_color="green", command=self.save_image_with_effect)
         self.btn_save_img2.pack(pady=10, padx=10)
+
+        # Elementos dentro de Esteganografia
+        self.btn_get_text = ctk.CTkButton(master=self.tabview.tab("Esteganografia"), text="Revelar Texto", command=self.reveal_text_from_image)
+        self.btn_get_text.pack(pady=10, padx=10)
+        self.btn_hide_text = ctk.CTkButton(master=self.tabview.tab("Esteganografia"), text="Ocultar Texto", command=self.hide_text_into_image)
+        self.btn_hide_text.pack(pady=10, padx=10)
+        self.textbox_steganography = ctk.CTkTextbox(master=self.tabview.tab("Esteganografia"))
+        self.textbox_steganography.pack(pady=10, padx=10, fill="both", expand=True)
+        self.btn_clean_textbox_steganography = ctk.CTkButton(master=self.tabview.tab("Esteganografia"), text="Limpiar", command=self.clean_textbox_steganography)
+        self.btn_clean_textbox_steganography.pack(pady=10, padx=10)
+        self.btn_copy_textbox_steganography = ctk.CTkButton(master=self.tabview.tab("Esteganografia"), text="Copiar", command=self.copy_textbox_steganography)
+        self.btn_copy_textbox_steganography.pack(pady=10, padx=10)
         # ---------------------------------------------------------------------
 
     # Funcion para cargar la imagen a la interfaz
@@ -140,8 +153,7 @@ class App(ctk.CTk):
     # Funcion para poder guardar la imagen escaneada
     def save_scanned_image(self):
         if self.processed_image is None:
-            return
-        
+            return 
         self.save_image(image=self.processed_image)
 
     # Funcion para poder guardar la imagen procesada (con filtros)
@@ -258,15 +270,27 @@ class App(ctk.CTk):
     def ocr(self):
         self.scan_image()
         text = pytesseract.image_to_string(self.processed_image)
-        self.textbox.delete("0.0", tk.END)
-        self.textbox.insert("0.0", text)
+        self.textbox_ocr.delete("0.0", tk.END)
+        self.textbox_ocr.insert("0.0", text)
             
-    def clean_textbox(self):
-        self.textbox.delete("0.0", ctk.END)
+    def clean_textbox(self, textbox_widget):
+        textbox_widget.delete("0.0", ctk.END)
     
-    def copy_textbox(self):
-        self.clipboard_clear()    
-        self.clipboard_append(self.textbox.get("0.0", ctk.END).strip())                     
+    def copy_textbox(self, textbox_widget):
+        self.clipboard_clear()                                              # Limpiamos el portapapeles    
+        self.clipboard_append(textbox_widget.get("0.0", ctk.END).strip())   # Copiamos el texto del textbox en el portapapeles                   
+
+    def clean_textbox_ocr(self):
+        self.clean_textbox(self.textbox_ocr)
+
+    def copy_textbox_ocr(self):
+        self.copy_textbox(self.textbox_ocr)
+
+    def clean_textbox_steganography(self):
+        self.clean_textbox(self.textbox_steganography)
+
+    def copy_textbox_steganography(self):
+        self.copy_textbox(self.textbox_steganography)
 
     def apply_effect(self, effect_index):
         if self.image is None:
@@ -279,6 +303,96 @@ class App(ctk.CTk):
         except Exception as e:
             self.mostrar_advertencia("Error", f"Failed to apply effect: {e}")
 
+    # Funciones para la esteganografia
+    def hide_text_into_image(self):
+        if self.image is None:
+            self.mostrar_advertencia("ERROR", "Primero carga una imagen")
+            return
+        
+        img = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+        text = self.textbox_steganography.get("0.0", ctk.END).strip()
+
+        # Convertir cada caracter del texto en codigo ascii
+        ascii_text = [ord(char) for char in text]
+
+        # Convertir cada valor ASCII en una cadena binaria de 8 bits
+        bytes_message = ['{:08b}'.format(c) for c in ascii_text]
+
+        # Guardamos todos los bits del mensaje en otra variable
+        bits_message = ''.join(bytes_message)
+
+        # Obtenemos las dimensiones de la imagen
+        m, n, d = img.shape
+
+        if len(bits_message) > (m*n*d):
+            print("El mensaje a ocultar es muy largo para la imagen")
+
+        # Obtenemos las capas de color de la imagen
+        b, g, r = cv2.split(img)
+
+        # Creamos una matriz donde guardaremos cada una de las capas modificadas de la imagen
+        # Borramos el bit menos significativo de cada capa
+        img_oculta = np.zeros_like(img)
+        img_oculta[:,:,0] = b & 0b11111110
+        img_oculta[:,:,1] = g & 0b11111110
+        img_oculta[:,:,2] = r & 0b11111110
+
+        # Iteramos sobre los píxeles de la imagen
+        for k in range(d):
+            for i in range(m):
+                for j in range(n):
+                    # Verificamos si hay más bits del mensaje para ocultar
+                    if len(bits_message) > 0:
+                        # Obtener el componente de píxel correspondiente
+                        bit_message = int(bits_message[0])
+                        # Guardamos el bit en cada capa de color de la iamgen
+                        img_oculta[i, j, k] = img_oculta[i, j, k] | bit_message
+                        # Eliminar el bit del mensaje
+                        bits_message = bits_message[1:]
+                    else:
+                        break
+
+        self.save_image(img_oculta)
+        self.clean_textbox(self.textbox_steganography)
+        
+    def reveal_text_from_image(self):
+        if self.image is None:
+            self.mostrar_advertencia("ERROR", "Primero carga una imagen")
+            return
+        
+        # Obtener las dimensiones de la imagen
+        m, n, d = self.image.shape
+
+        # Listas para almacenar los bits del mensaje oculto
+        bits_message = []
+        current_byte = ''
+
+        img = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
+
+        # Iterar sobre los píxeles de la imagen
+        for k in range(d):
+            for i in range(m):
+                for j in range(n):
+                    # Obtener el componente de píxel correspondiente
+                    pixel = img[i, j, k]
+
+                    # Obtener el bit menos significativo y convertirlo a cadena
+                    current_byte += str(pixel & 0b00000001)
+
+                    # Si hemos recopilado 8 bits, agregamos el byte al mensaje
+                    if len(current_byte) == 8:
+                        if current_byte != "00000000":
+                            bits_message.append(current_byte)
+                            current_byte = ''
+                        else:
+                            break
+
+        # Convertir los bits del mensaje en caracteres ASCII
+        text = ''.join([chr(int(byte, 2)) for byte in bits_message])
+        # print(text if text != '' else "no hay texto")
+        self.textbox_steganography.delete("0.0", tk.END)
+        self.textbox_steganography.insert("0.0", text)
+        
     # Funcion para poder enviar avisos o advertencias dentro de la interfaz
     def mostrar_advertencia(self, title, message):
         # Configuracion de ventana
