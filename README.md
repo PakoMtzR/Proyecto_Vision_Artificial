@@ -1,9 +1,9 @@
-# Document Scanner & More
+# Proyecto Vision Artificial
 ---
 ![img1](/imgs/img_1.png)
 ![img2](/imgs/img_2.png)
 ## Descripción
-Document Scanner & More es una aplicación de escritorio diseñada para escanear, procesar y aplicar efectos a imágenes de documentos. La aplicación permite cargar imágenes, escanear documentos, aplicar efectos visuales y guardar los resultados en varios formatos, incluyendo la creación de archivos PDF. Además, incluye una función de reconocimiento óptico de caracteres (OCR) para extraer texto de las imágenes escaneadas.
+Proyecto Vision Artificial es una aplicación de escritorio que ofrece una variedad de herramientas para el procesamiento y análisis de imágenes, incluyendo escaneo de documentos, aplicación de efectos visuales, OCR (reconocimiento óptico de caracteres) y esteganografía.
 
 ## Características
 * **Carga de Imágenes:** Permite cargar imágenes desde el sistema de archivos.
@@ -13,6 +13,7 @@ Document Scanner & More es una aplicación de escritorio diseñada para escanear
 * **Creación de PDF:** Combina múltiples imágenes escaneadas en un solo archivo PDF.
 * **Reconocimiento de Caracteres (OCR):** Extrae texto de las imágenes escaneadas utilizando Tesseract OCR.
 * **Aplicación de Efectos Visuales:** Aplica diversos efectos a las imágenes, como dibujo a lápiz, VHS, acuarela, caricatura, óleo, sepia, emboss, térmico, miopía, anaglyph, espejo y viñeta.
+* **Esteganografía:** Permite ocultar texto dentro de una imagen y extraerlo posteriormente.
 * **Interfaz de Usuario Personalizable:** Usa la biblioteca customtkinter para una apariencia moderna y personalizable.
 
 ## Requisitos
@@ -39,7 +40,7 @@ Document Scanner & More es una aplicación de escritorio diseñada para escanear
    ```
 4. Ejecuta el programa:
    ```
-   python document_scanner_gui.py
+   python app.py
    ```
 
 ## Uso
@@ -68,3 +69,8 @@ Document Scanner & More es una aplicación de escritorio diseñada para escanear
 1. En la pestaña de efectos, selecciona el efecto deseado.
 2. Haz clic en el botón correspondiente al efecto para aplicarlo a la imagen.
 3. Guarda la imagen con el efecto aplicado usando "Guardar Imagen".
+
+### Esteganografía
+1. En la pestaña de esteganografía, selecciona "Ocultar Texto" o "Extraer Texto".
+2. Para ocultar texto, escribe el texto en el campo proporcionado y selecciona una imagen. Luego, guarda la imagen con el texto oculto.
+3. Para extraer texto, selecciona la imagen que contiene el texto oculto. El texto será extraído y mostrado en el campo correspondiente.
